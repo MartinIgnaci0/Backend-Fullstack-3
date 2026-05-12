@@ -4,26 +4,25 @@ from .models import Usuario
 from itertools import cycle
 
 class RegistroSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, required=False)
-    rut = serializers.CharField()
+    # Definimos campos obligatorios y limpios para Swagger
+    password = serializers.CharField(write_only=True, required=True)
+    rut = serializers.CharField(required=True)
+    email = serializers.EmailField(required=True)
 
     class Meta:
         model = Usuario
-        fields = ['id', 'username', 'email', 'first_name', 'rut', 'password']
+        # Quitamos 'username' e 'id' de aquí para que Swagger se vea limpio
+        fields = ['rut', 'email', 'first_name', 'last_name', 'password']
 
-    # ESTO ES LO QUE NO PUEDE IGNORAR:
     def validate_rut(self, value):
-        # 1. Limpieza
+        # Tu lógica de validación está perfecta, la mantenemos
         rut_limpio = str(value).upper().replace("-", "").replace(".", "").strip()
         
-        # 2. Check de letras (Regex)
         if not re.match(r"^\d{7,8}[0-9K]$", rut_limpio):
             raise serializers.ValidationError("RUT inválido: Solo números y K final.")
 
-        # 3. Módulo 11
         cuerpo = rut_limpio[:-1]
         dv_ingresado = rut_limpio[-1]
-
         reverso = map(int, reversed(cuerpo))
         factores = cycle(range(2, 8))
         suma = sum(d * f for d, f in zip(reverso, factores))
@@ -38,9 +37,19 @@ class RegistroSerializer(serializers.ModelSerializer):
         return rut_limpio
 
     def create(self, validated_data):
+        # TRUCO PROFESIONAL: 
+        # Como Django exige un 'username' internamente, le asignamos el RUT.
+        # Así el usuario no tiene que inventar un nombre de usuario.
+        validated_data['username'] = validated_data['rut']
+        
+        # Usamos create_user para que la password se encripte correctamente
         return Usuario.objects.create_user(**validated_data)
 
     def update(self, instance, validated_data):
+        # Si actualizan el RUT, actualizamos el username también
+        if 'rut' in validated_data:
+            validated_data['username'] = validated_data['rut']
+            
         password = validated_data.pop('password', None)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)

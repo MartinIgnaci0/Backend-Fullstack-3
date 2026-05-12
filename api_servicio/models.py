@@ -34,6 +34,7 @@ def validar_rut_chileno(value):
     return value
 
 class Usuario(AbstractUser):
+    # El RUT es único y obligatorio por el validador
     rut = models.CharField(
         max_length=12, 
         unique=True, 
@@ -41,5 +42,11 @@ class Usuario(AbstractUser):
         help_text="Formato: 12345678-K o 12345678K"
     )
 
+    # Definimos el RUT como el campo de inicio de sesión (ID principal)
+    USERNAME_FIELD = 'rut' 
+    
+    # (El username sigue existiendo en AbstractUser, así que lo pedimos aquí)
+    REQUIRED_FIELDS = ['username', 'email', 'first_name'] 
+
     def __str__(self):
-        return f"{self.username} ({self.rut})"
+        return f"{self.rut} - {self.first_name} {self.last_name}"
