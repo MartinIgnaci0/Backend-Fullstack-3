@@ -30,7 +30,7 @@ python -m venv venv
 pip install -r requirements.txt
 
 2. Configuracion de Base de Datos
-Es necesario crear una base de datos en su gestor local (phpMyAdmin u otro) con el nombre definido en el archivo settings.py. Por defecto: api_usuarios_db.
+Es necesario crear una base de datos en su gestor local (phpMyAdmin u otro) con el nombre definido en el archivo settings.py. Por defecto: usuarios_db.
 
 Notas de Compatibilidad (MariaDB)
 Debido a las restricciones de version en entornos locales como XAMPP, el archivo config/init.py incluye parches de compatibilidad para versiones de MariaDB anteriores a la 10.5:
