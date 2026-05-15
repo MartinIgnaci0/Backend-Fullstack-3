@@ -11,8 +11,8 @@ class RegistroSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Usuario
-        # Quitamos 'username' e 'id' de aquí para que Swagger se vea limpio
-        fields = ['rut', 'email', 'first_name', 'last_name', 'password']
+        fields = ['id', 'rut', 'email', 'first_name', 'last_name', 'password', 'is_staff']
+        extra_kwargs = {'is_staff': {'read_only': True}}
 
     def validate_rut(self, value):
         # Tu lógica de validación está perfecta, la mantenemos
